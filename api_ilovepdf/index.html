@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversión de DOC a PDF</title>
+</head>
+
+<body>
+    <h1>Conversión de DOC a PDF</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" accept=".doc, .docx">
+        <button type="button" onclick="convertToPDF()">Convertir a PDF</button>
+    </form>
+
+    <script>
+        function convertToPDF() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('convertir.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Descarga el PDF resultante
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = data.output;
+                            downloadLink.download = 'documento.pdf';
+                            downloadLink.click();
+                        } else {
+                            console.error('Error en la respuesta de la API de iLovePDF:', data.error);
+                            alert('Error al convertir el archivo. Consulta la consola para obtener más detalles.');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                alert('Selecciona un archivo para convertir.');
+            }
+        }
+    </script>
+</body>
+
+</html>

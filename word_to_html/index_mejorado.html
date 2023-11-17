@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/html2pdf.js@0.10.0/dist/html2pdf.bundle.js"></script>
+    <title>Word to HTML Converter</title>
+</head>
+
+<body>
+    <input type="file" id="fileInput" accept=".docx">
+    <div id="output"></div>
+    <button onclick="downloadPDF()">Descargar PDF</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"
+        integrity="sha512-sG5Q7boJL+ft/weuz6Mmi9XBD+bEzE9AI2FMP4YMFxp3FpTFUQSQQm5K5cSgJCyed6bWs3W8f8h0lp36lHXhQA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(event) {
+            // Obtenemos el archivo seleccionado
+            const file = event.target.files[0];
+
+            if (file) {
+                // Creamos un objeto FileReader para leer el contenido del archivo
+                const reader = new FileReader();
+
+                var options = {
+                    styleMap: [
+                        "p[style-name='Section Title'] => h1:fresh",
+                        "p[style-name='Subsection Title'] => h2:fresh"
+                    ]
+                };
+
+                // Configuramos el evento onload para ejecutar cuando la lectura esté completa
+                reader.onload = function (event) {
+                    // Obtenemos el contenido del archivo como un arrayBuffer
+                    const arrayBuffer = event.target.result;
+
+                    // Utilizamos Mammoth para convertir el contenido a HTML
+                    mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, options)
+                        .then(function (result) {
+                            // Mostramos el HTML resultante en el div de salida
+                            document.getElementById('output').innerHTML = result.value;
+                            // var html = result.value; // HTML generado
+                            // var messages = result.messages; // Mensajes, como advertencias durante la conversión
+                        })
+                        .catch(function (error) {
+                            // Manejamos errores, si los hay
+                            console.error(error);
+                        });
+                };
+
+                // Iniciamos la lectura del archivo como un arrayBuffer
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        function downloadPDF() {
+            // Obtiene el contenido HTML del div de salida
+            const element = document.getElementById('output');
+
+            // Configura las opciones para la generación del PDF
+            const pdfOptions = {
+                margin: 10,
+                filename: 'output.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Convierte el contenido HTML a PDF
+            html2pdf(element, pdfOptions);
+        }
+    </script>
+</body>
+
+</html>
